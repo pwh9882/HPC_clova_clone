@@ -33,17 +33,16 @@ async function startRecording() {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.transcript) {
-                // document.getElementById('recording-status').textContent = data.message;
-                // document.getElementById('minutes').textContent = data.text;
-                document.getElementById('summary').textContent = data.summary;
+            if (data.text) {
+                document.getElementById('text-output').innerText = data.text;
+                document.getElementById('notes-output').innerText = data.summary;
             } else if (data.error) {
                 document.getElementById('recording-status').textContent = 'Error: ' + data.error;
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred, error code: 1');
+            alert('An error occurred');
         });
     };
 
