@@ -40,8 +40,9 @@ async function startRecording() {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred');
+            // console.error('Error:', error);
+            // alert('An error occurred, error code: 1');
+            alert(error.message)
         });
     };
 

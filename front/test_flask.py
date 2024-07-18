@@ -1,10 +1,11 @@
 import os
 
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 
 
 app = Flask(__name__)
-
+CORS(app)  # CORS 설정
 
 
 @app.route('/')
@@ -27,7 +28,9 @@ def upload_file():
         filepath = os.path.join("C:\\Users\\ghdtj\\OneDrive\\바탕 화면\\clova\\HTC_clova_clone\\front\\uploads", filename)
         file.save(filepath)
         return jsonify({
-            "message": f"File {filename} uploaded successfully"
+            "message": f"File {filename} uploaded successfully",
+            "text": "회의록",
+            "summary": "요약본"
         }), 200
     else:
         return jsonify({"error": "File type is not supported. Only .wav files are allowed"}), 400
