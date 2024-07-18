@@ -29,8 +29,8 @@ def upload_file():
         file.save(filepath)
         return jsonify({
             "message": f"File {filename} uploaded successfully",
-            "text": "회의록",
-            "summary": "요약본"
+            "text" : "회의록",
+            "summary" : "요약본"
         }), 200
     else:
         return jsonify({"error": "File type is not supported. Only .wav files are allowed"}), 400
