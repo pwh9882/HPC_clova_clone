@@ -4,13 +4,12 @@ LLM을 이용해 입력받은 텍스트 회의록을 요약합니다.
 
 # 사용한 스택
 
-fastapi
 LangChain
 
 # 작동 방법
 
-''' bash
-uvicorn main:app --reload
-'''
+from llm_summerizer import summarize_by_llm
+으로 summarize_by_llm을 사용합니다.
 
-을 입력해서 서버를 시작합니다.
+input: text string
+output: {"summary": response} 형식의 dict

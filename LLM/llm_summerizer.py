@@ -10,16 +10,6 @@ import os
 
 load_dotenv()
 
-app = FastAPI()
-
-# CORS 설정
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Azure OpenAI 설정
 llm = AzureChatOpenAI(
@@ -47,13 +37,7 @@ prompt_template = ChatPromptTemplate.from_messages([
 summarize_chain = prompt_template | llm | StrOutputParser()
 
 
-class SummerizationRequest(BaseModel):
-    text: str
-    language: str = Field(default="korean")
-
-
-@app.post("/summarize")
-async def summarize_text(request: SummerizationRequest):
+async def summarize_by_llm(text, language="korean"):
     response = summarize_chain.invoke(
-        {"input": request.text, "language": request.language})
+        {"input": text, "language": language})
     return {"summary": response}
