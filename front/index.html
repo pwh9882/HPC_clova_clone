@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech to Text</title>
+</head>
+
+<body>
+    <h1>Speech to Text using PyAudio</h1>
+    <button id="start-record-btn">Start Recording</button>
+    <button id="stop-record-btn">Stop Recording</button>
+    <p id="status"></p>
+    <textarea id="transcript" rows="10" cols="50"></textarea>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+
+        document.getElementById('start-record-btn').addEventListener('click', async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.start();
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstart = () => {
+                document.getElementById('status').textContent = 'Recording...';
+            };
+
+            mediaRecorder.onstop = () => {
+                document.getElementById('status').textContent = 'Stopped Recording';
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                audioChunks = [];
+                const formData = new FormData();
+                formData.append('file', audioBlob, 'temp.wav');
+
+                fetch('http://localhost:5000/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.transcript) {
+                            document.getElementById('transcript').value += data.transcript + '\n';
+                        } else if (data.error) {
+                            document.getElementById('status').textContent = 'Error: ' + data.error;
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('status').textContent = 'Error: ' + error.message;
+                    });
+            };
+        });
+
+        document.getElementById('stop-record-btn').addEventListener('click', () => {
+            mediaRecorder.stop();
+        });
+    </script>
+</body>
+
+</html>
