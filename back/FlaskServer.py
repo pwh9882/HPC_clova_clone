@@ -1,15 +1,17 @@
-from flask import Flask, request, jsonify
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import AzureChatOpenAI
-from langchain.schema import HumanMessage
-from dotenv import load_dotenv
+from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 import os
 from LLM.llm_summerizer import summarize_by_llm
 from STT_script import STT
 
 
 app = Flask(__name__)
+CORS(app)  # CORS 설정
+
+
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 
 def test_init():
@@ -22,6 +24,8 @@ def test_init():
 
 def init():
     test_init()
+
+
 
 
 @app.route('/upload', methods=['POST'])
