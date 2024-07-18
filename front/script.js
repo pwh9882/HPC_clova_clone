@@ -1,35 +1,74 @@
+let mediaRecorder;
+let audioChunks = [];
+let startTime;
+let timerInterval;
+
 document.getElementById('start-recording').addEventListener('click', startRecording);
 document.getElementById('stop-recording').addEventListener('click', stopRecording);
 
-function startRecording() {
-    document.getElementById('recording-status').innerHTML = '<span id="recording-dot"></span> Recording...';
+async function startRecording() {
+    document.getElementById('recording-status').innerHTML = '<span id="recording-dot" class="recording"></span> Recording...';
     document.getElementById('recording-dot').style.display = 'inline-block';
-    // 여기서 녹음을 시작하는 코드를 추가할 수 있습니다.
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.start();
+    startTime = new Date();
+    startTimer();
+
+    mediaRecorder.ondataavailable = event => {
+        audioChunks.push(event.data);
+    };
+
+    mediaRecorder.onstart = () => {
+        document.getElementById('recording-status').innerHTML = '<span id="recording-dot" class="recording"></span> Recording...';
+    };
 }
 
 function stopRecording() {
+    mediaRecorder.stop();
+    stopTimer();
     document.getElementById('recording-status').innerHTML = 'Ready to record...';
     document.getElementById('recording-dot').style.display = 'none';
-    // 여기서 녹음을 멈추고 텍스트 변환 코드를 추가할 수 있습니다.
-    const formData = new FormData();
-    formData.append('file', file);
 
-    fetch('/upload', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert('Error: ' + data.error);
-        } else {
-            alert('Success: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred');
-    });
+    mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        audioChunks = [];
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'temp.wav');
+
+        fetch('http://localhost:5000/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.transcript) {
+                document.getElementById('text-output').innerText = data.transcript;
+            } else if (data.error) {
+                document.getElementById('recording-status').textContent = 'Error: ' + data.error;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred');
+        });
+    };
 }
 
-// http를 통해서 파일을 주고 받는 것을 구현
+function startTimer() {
+    timerInterval = setInterval(() => {
+        const now = new Date();
+        const elapsedTime = new Date(now - startTime);
+        const hours = String(elapsedTime.getUTCHours()).padStart(2, '0');
+        const minutes = String(elapsedTime.getUTCMinutes()).padStart(2, '0');
+        const seconds = String(elapsedTime.getUTCSeconds()).padStart(2, '0');
+        document.getElementById('time-elapsed').textContent = `${hours}:${minutes}:${seconds}`;
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timerInterval);
+    document.getElementById('time-elapsed').textContent = '00:00:00';
+}
