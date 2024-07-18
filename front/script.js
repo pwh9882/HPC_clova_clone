@@ -13,10 +13,6 @@ async function startRecording() {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorder = new MediaRecorder(stream);
 
-    mediaRecorder.start();
-    startTime = new Date();
-    startTimer();
-
     mediaRecorder.ondataavailable = event => {
         audioChunks.push(event.data);
     };
@@ -24,13 +20,6 @@ async function startRecording() {
     mediaRecorder.onstart = () => {
         document.getElementById('recording-status').innerHTML = '<span id="recording-dot" class="recording"></span> Recording...';
     };
-}
-
-function stopRecording() {
-    mediaRecorder.stop();
-    stopTimer();
-    document.getElementById('recording-status').innerHTML = 'Ready to record...';
-    document.getElementById('recording-dot').style.display = 'none';
 
     mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
@@ -55,6 +44,19 @@ function stopRecording() {
             alert('An error occurred');
         });
     };
+
+    mediaRecorder.start();
+    startTime = new Date();
+    startTimer();
+}
+
+function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+        stopTimer();
+        document.getElementById('recording-status').innerHTML = 'Ready to record...';
+        document.getElementById('recording-dot').style.display = 'none';
+    }
 }
 
 function startTimer() {
